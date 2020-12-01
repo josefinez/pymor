@@ -41,6 +41,7 @@ extensions = ['sphinx.ext.autodoc',
               'try_on_binder',
               'jupyter_sphinx',
               'sphinx.ext.mathjax',
+              'sphinx_autoapi',
               'sphinx_qt_documentation',
               'gen_apidoc'
               ]
