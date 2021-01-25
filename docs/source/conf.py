@@ -21,6 +21,7 @@ needs_sphinx = '1.0'
 sys.path.insert(0, os.path.abspath('../../src'))
 sys.path.insert(0, os.path.abspath('.'))
 
+import substitutions
 #generate autodoc
 import gen_apidoc
 import pymor
@@ -40,10 +41,30 @@ extensions = ['sphinx.ext.autodoc',
               'pymordocstring',
               'try_on_binder',
               'jupyter_sphinx',
+              'myst_nb',
               'sphinx.ext.mathjax',
               'sphinx_qt_documentation',
               'gen_apidoc'
               ]
+# this enables:
+# - https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html#direct-latex-math
+# - https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html#definition-lists
+# - https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html#substitutions-with-jinja2
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "html_image",
+    "colon_fence",
+    "smartquotes",
+    "replacements",
+    "substitution",
+]
+myst_url_schemes = ("http", "https", "mailto")
+# auto genereated link anchors
+myst_heading_anchors = 2
+myst_substitutions = substitutions.myst_substitutions
+jupyter_execute_notebooks = "cache"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -244,7 +265,7 @@ coverage_ignore_c_items = {}
 
 # PyQt5 inventory is only used internally, actual link targets PySide2
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
-                       'numpy': ('https://numpy.org/doc/stable/', None), 
+                       'numpy': ('https://numpy.org/doc/stable/', None),
                        'PyQt5': ("https://www.riverbankcomputing.com/static/Docs/PyQt5", None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
                        'matplotlib': ('https://matplotlib.org', None),
