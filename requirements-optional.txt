@@ -40,6 +40,7 @@ scipy>=1.5.4;python_version >= "3.9"
 setuptools>=40.8.0,<49.2.0;python_version < "3.9"
 setuptools>=49.1,<49.2.0;python_version >= "3.9"
 slycot>=0.4.0
+sphinx-autoapi>=1.7
 sphinx-material
 sphinx-qt-documentation
 sphinx>=3.4
