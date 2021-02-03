@@ -64,6 +64,7 @@ myst_url_schemes = ("http", "https", "mailto")
 # auto genereated link anchors
 myst_heading_anchors = 2
 myst_substitutions = substitutions.myst_substitutions
+execution_timeout = 60
 jupyter_execute_notebooks = "cache"
 
 # Add any paths that contain templates here, relative to this directory.
