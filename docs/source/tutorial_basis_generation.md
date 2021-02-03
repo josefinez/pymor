@@ -1,20 +1,35 @@
 ---
-jupytext:
-  text_representation:
-    extension: .md
-    format_name: myst
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
+  jupytext:
+    text_representation:
+      extension: .md
+      format_name: myst
+  kernelspec:
+    display_name: Python 3
+    language: python
+    name: python3
 ---
 
+```{code-cell}
+:tags: [remove-cell]
+from IPython import get_ipython
+ip = get_ipython()
+if ip is not None:
+    ip.run_line_magic('load_ext', 'pymor.discretizers.builtin.gui.jupyter')
+%matplotlib inline
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module='torch')
+import pymor.tools.random
+pymor.tools.random._default_random_state = None
+```
 
 Tutorial: Building a Reduced Basis
 ==================================
 
+This notebook can be downloaded {nb-download}`tutorial_basis_generation.ipynb` and {download}`tutorial_basis_generation.md`
 
-
+```{try_on_binder}
+```
 
 In this tutorial we will learn more about {{ VectorArrays }} and how to
 construct a reduced basis using pyMOR.
@@ -62,7 +77,7 @@ However, we will only find a good {math}`V_N` of small dimension
 {math}`N` if the values {math}`d_N` decrease quickly for growing
 {math}`N`. It can be shown that this is the case as soon as {math}`u(\mu)`
 analytically depends on {math}`\mu`, which is true for many problems
-of interest. More precisely, it can be shown [BCDDPW11]_, [DPW13]_ that there are constants
+of interest. More precisely, it can be shown ()[BCDDPW11], ()[DPW13] that there are constants
 {math}`C, c > 0` such that
 
 $$ d_N \leq C \cdot e^{-N^c}. $$
@@ -78,14 +93,14 @@ First we need to define a {{ Model }} and a {{ ParameterSpace }} for which we wa
 to build a reduced basis. We choose here the standard
 {meth}`thermal block <pymor.analyticalproblems.thermalblock.thermal_block_problem>` benchmark
 problem shipped with pyMOR (see {doc}`getting_started`). However, any pyMOR
-{{ Model }} can be used, except for Section [Weak Greedy Algorithm](#weak-greedy-algorithm) where
+{{ Model }} can be used, except for Section [Weak Greedy Algorithm](#weakgreedy) where
 some more assumptions have to be made on the {{ Model }}.
 
 First we import everything we need:
 
 ```{code-cell}
-    import numpy as np
-    from pymor.basic import *
+import numpy as np
+from pymor.basic import *
 ```
 
 Then we build a 3-by-3 thermalblock problem that we discretize using pyMOR's
@@ -93,8 +108,8 @@ Then we build a 3-by-3 thermalblock problem that we discretize using pyMOR's
 {doc}`tutorial_builtin_discretizer` for an introduction to pyMOR's discretization toolkit).
 
 ```{code-cell}
-    problem = thermal_block_problem((3,3))
-    fom, _ = discretize_stationary_cg(problem, diameter=1/100)
+problem = thermal_block_problem((3,3))
+fom, _ = discretize_stationary_cg(problem, diameter=1/100)
 ```
 
 Next, we need to define a {{ ParameterSpace }} of {{ parameter_values }} for which
@@ -103,7 +118,7 @@ We do this by calling the {meth}`~pymor.parameters.base.Parameters.space` method
 of the |parameters| of `fom`:
 
 ```{code-cell}
-    parameter_space = fom.parameters.space(0.0001, 1.)
+parameter_space = fom.parameters.space(0.0001, 1.)
 ```
 
 Here, `0.0001` and `1.` are the common lower and upper bounds for the
@@ -111,7 +126,7 @@ individual components of all |parameters| of `fom`. In our case `fom`
 expects a single parameter `'diffusion'` of 9 values:
 
 ```{code-cell}
-   fom.parameters
+fom.parameters
 ```
 
 If `fom` were to depend on multiple |parameters|, we could also call the
@@ -134,8 +149,8 @@ approach is to just pick these values randomly, what we will do in the
 following. First we define a training set of 25 parameters:
 
 ```{code-cell}
-    training_set = parameter_space.sample_randomly(25)
-    print(training_set)
+training_set = parameter_space.sample_randomly(25)
+print(training_set)
 ```
 
 Then we {meth}`~pymor.models.interface.Model.solve` the full-order model
@@ -151,9 +166,9 @@ of a {{ Model }} belong to its {attr}`~pymor.models.interface.Model.solution_spa
 so we write:
 
 ```{code-cell}
-    U = fom.solution_space.empty()
-    for mu in training_set:
-        U.append(fom.solve(mu))
+U = fom.solution_space.empty()
+for mu in training_set:
+    U.append(fom.solve(mu))
 ```
 
 Note that `fom.solve` returns a {{ VectorArray }} containing a single vector.
@@ -165,7 +180,7 @@ information necessary to build {{ VectorArrays }} containing vector objects
 of a certain type. In our case we have
 
 ```{code-cell}
-   fom.solution_space
+fom.solution_space
 ```
 
 which means that the created {{ VectorArrays }} will internally hold
@@ -181,7 +196,7 @@ After appending all solutions vectors to `U`, we can verify that `U`
 now really contains 25 vectors:
 
 ```{code-cell}
-    len(U)
+len(U)
 ```
 
 Note that appending one {{ VectorArray }} `V` to another array `U`
@@ -194,7 +209,7 @@ A {{ VectorArray }} containing multiple vectors is visualized as a
 time series:
 
 ```{code-cell}
-    fom.visualize(U)
+fom.visualize(U)
 ```
 
 A trivial reduced basis
@@ -204,7 +219,7 @@ Given some snapshot data, the easiest option to get a reduced basis
 is to just use the snapshot vectors as the basis:
 
 ```{code-cell}
-   trivial_basis = U.copy()
+trivial_basis = U.copy()
 ```
 
 Note that assignment in Python never copies data! Thus, if we had written
@@ -257,7 +272,7 @@ the best-approximation error in `trivial_basis` for some test vector
 `V` which we take as another random solution of our {{ Model }}:
 
 ```{code-cell}
-    V = fom.solve(parameter_space.sample_randomly(1)[0])
+V = fom.solve(parameter_space.sample_randomly(1)[0])
 ```
 
 The matrix {math}`G` of all inner products between vectors in `trivial_basis`
@@ -266,7 +281,7 @@ Consequently, every {{ VectorArray }} has a {meth}`~pymor.vectorarrays.interface
 this matrix:
 
 ```{code-cell}
-    G = trivial_basis.gramian()
+G = trivial_basis.gramian()
 ```
 
 The Gramian is computed w.r.t. the Euclidean inner product. For the
@@ -276,20 +291,20 @@ products between the vectors in `trivial_basis` and (the single vector in)
 method:
 
 ```{code-cell}
-    R = trivial_basis.inner(V)
+R = trivial_basis.inner(V)
 ```
 
 which will give us a {math}`25\times 1` {{ NumPy_array }} of all inner products.
 
 ```{code-cell}
 :tags: [remove-cell]
-    assert R.shape == (25,1)
+assert R.shape == (25,1)
 ```
 
 Now, we can use {{ NumPy }} to solve the linear equation system:
 
 ```{code-cell}
-    lambdas = np.linalg.solve(G, R)
+lambdas = np.linalg.solve(G, R)
 ```
 
 Finally, we need to form the linear combination
@@ -301,7 +316,7 @@ of `trivial_basis`. It expects row vectors of linear coefficients, but
 `solve` returns column vectors, so we need to take the transpose:
 
 ```{code-cell}
-    V_proj = trivial_basis.lincomb(lambdas.T)
+V_proj = trivial_basis.lincomb(lambdas.T)
 ```
 
 Let's look at `V`, `V_proj` and the difference of both. {{ VectorArrays }} of
@@ -309,11 +324,9 @@ the same length can simply be subtracted, yielding a new array of the
 differences:
 
 ```{code-cell}
-  # for some reason V_proj does not carry over from the previous cell
-  V_proj = trivial_basis.lincomb(lambdas.T)
-  fom.visualize((V, V_proj, V - V_proj),
-                legend=('V', 'V_proj', 'best-approximation err'),
-                separate_colorbars=True)
+fom.visualize((V, V_proj, V - V_proj),
+              legend=('V', 'V_proj', 'best-approximation err'),
+              separate_colorbars=True)
 ```
 
 As you can see, we already have a quite good approximation of `V` with
@@ -331,17 +344,17 @@ assembled a corresponding inner product {{ Operator }} for us, which is availabl
 as
 
 ```{code-cell}
-    fom.h1_0_semi_product
+fom.h1_0_semi_product
 ```
 
 ```{note}
-    The `0` in `h1_0_semi_product` refers to the fact that rows and columns of
-    Dirichlet boundary DOFs have been cleared in the matrix of the Operator to
-    make it invertible. This is important for being able to compute Riesz
-    representatives w.r.t. this inner product (required for a posteriori
-    estimation of the ROM error). If you want to compute the H1 semi-norm of a
-    function that does not vanish at the Dirichlet boundary, use
-    `fom.h1_semi_product`.
+The `0` in `h1_0_semi_product` refers to the fact that rows and columns of
+Dirichlet boundary DOFs have been cleared in the matrix of the Operator to
+make it invertible. This is important for being able to compute Riesz
+representatives w.r.t. this inner product (required for a posteriori
+estimation of the ROM error). If you want to compute the H1 semi-norm of a
+function that does not vanish at the Dirichlet boundary, use
+`fom.h1_semi_product`.
 ```
 
 To use `fom.h1_0_semi_product` as an inner product {{ Operator }} for computing the
@@ -350,12 +363,12 @@ projection error, we can simply pass it as the optional `product` argument to
 {meth}`~pymor.vectorarrays.interface.VectorArray.inner`:
 
 ```{code-cell}
-    G = trivial_basis[:10].gramian(product=fom.h1_0_semi_product)
-    R = trivial_basis[:10].inner(V, product=fom.h1_0_semi_product)
-    lambdas = np.linalg.solve(G, R)
-    V_h1_proj = trivial_basis[:10].lincomb(lambdas.T)
+G = trivial_basis[:10].gramian(product=fom.h1_0_semi_product)
+R = trivial_basis[:10].inner(V, product=fom.h1_0_semi_product)
+lambdas = np.linalg.solve(G, R)
+V_h1_proj = trivial_basis[:10].lincomb(lambdas.T)
 
-    fom.visualize((V, V_h1_proj, V - V_h1_proj), separate_colorbars=True)
+fom.visualize((V, V_h1_proj, V - V_h1_proj), separate_colorbars=True)
 ```
 
 As you might have guessed, we have additionally opted here to only use the
@@ -372,10 +385,10 @@ basis sizes.
 First, we compute the validation snapshots:
 
 ```{code-cell}
-    validation_set = parameter_space.sample_randomly(100)
-    V = fom.solution_space.empty()
-    for mu in validation_set:
-        V.append(fom.solve(mu))
+validation_set = parameter_space.sample_randomly(100)
+V = fom.solution_space.empty()
+for mu in validation_set:
+    V.append(fom.solve(mu))
 ```
 
 To optimize the computation of the projection matrix and the right-hand
@@ -383,20 +396,20 @@ side for varying basis sizes, we first compute these for the full basis
 and then extract appropriate sub-matrices:
 
 ```{code-cell}
-    def compute_proj_errors(basis, V, product):
-        G = basis.gramian(product=product)
-        R = basis.inner(V, product=product)
-        errors = []
-        for N in range(len(basis) + 1):
-            if N > 0:
-                v = np.linalg.solve(G[:N, :N], R[:N, :])
-            else:
-                v = np.zeros((0, len(V)))
-            V_proj = basis[:N].lincomb(v.T)
-            errors.append(np.max((V - V_proj).norm(product=product)))
-        return errors
+def compute_proj_errors(basis, V, product):
+    G = basis.gramian(product=product)
+    R = basis.inner(V, product=product)
+    errors = []
+    for N in range(len(basis) + 1):
+        if N > 0:
+            v = np.linalg.solve(G[:N, :N], R[:N, :])
+        else:
+            v = np.zeros((0, len(V)))
+        V_proj = basis[:N].lincomb(v.T)
+        errors.append(np.max((V - V_proj).norm(product=product)))
+    return errors
 
-    trivial_errors = compute_proj_errors(trivial_basis, V, fom.h1_0_semi_product)
+trivial_errors = compute_proj_errors(trivial_basis, V, fom.h1_0_semi_product)
 ```
 
 Here we have used the fact that we can form multiple linear combinations at once by passing
@@ -410,11 +423,11 @@ norms of the vectors are computed.
 Let's plot the projection errors:
 
 ```{code-cell}
-    from matplotlib import pyplot as plt
-    plt.figure()
-    plt.semilogy(trivial_errors)
-    plt.ylim(1e-1, 1e1)
-    plt.show()
+from matplotlib import pyplot as plt
+plt.figure()
+plt.semilogy(trivial_errors)
+plt.ylim(1e-1, 1e1)
+plt.show()
 ```
 
 Good! We see an exponential decay of the error with growing basis size.
@@ -422,7 +435,7 @@ However, we can do better. If we want to use a smaller basis than we
 have snapshots available, just picking the first of these obviously
 won't be optimal.
 
-.. _stronggreedy:
+(stronggreedy)=
 
 Strong greedy algorithm
 -----------------------
@@ -435,21 +448,21 @@ currently worst-approximated snapshot vector to the basis of {math}`V_N`.
 We can easily implement it as follows:
 
 ```{code-cell}
-    def strong_greedy(U, product, N):
-        basis = U.space.empty()
+def strong_greedy(U, product, N):
+    basis = U.space.empty()
 
-        for n in range(N):
-            # compute projection errors
-            G = basis.gramian(product)
-            R = basis.inner(U, product=product)
-            lambdas = np.linalg.solve(G, R)
-            U_proj = basis.lincomb(lambdas.T)
-            errors = (U - U_proj).norm(product)
+    for n in range(N):
+        # compute projection errors
+        G = basis.gramian(product)
+        R = basis.inner(U, product=product)
+        lambdas = np.linalg.solve(G, R)
+        U_proj = basis.lincomb(lambdas.T)
+        errors = (U - U_proj).norm(product)
 
-            # extend basis
-            basis.append(U[np.argmax(errors)])
+        # extend basis
+        basis.append(U[np.argmax(errors)])
 
-        return basis
+    return basis
 ```
 
 Obviously, this algorithm is not optimized as we keep computing inner
@@ -457,20 +470,20 @@ products we already know, but it will suffice for our purposes. Let's
 compute a reduced basis using the strong greedy algorithm:
 
 ```{code-cell}
-    greedy_basis = strong_greedy(U, fom.h1_0_product, 25)
+greedy_basis = strong_greedy(U, fom.h1_0_product, 25)
 ```
 
 We compute the approximation errors for the validation set as before:
 
 ```{code-cell}
-    greedy_errors = compute_proj_errors(greedy_basis, V, fom.h1_0_semi_product)
+greedy_errors = compute_proj_errors(greedy_basis, V, fom.h1_0_semi_product)
 
-    plt.figure()
-    plt.semilogy(trivial_errors, label='trivial')
-    plt.semilogy(greedy_errors, label='greedy')
-    plt.ylim(1e-1, 1e1)
-    plt.legend()
-    plt.show()
+plt.figure()
+plt.semilogy(trivial_errors, label='trivial')
+plt.semilogy(greedy_errors, label='greedy')
+plt.ylim(1e-1, 1e1)
+plt.legend()
+plt.show()
 ```
 
 Indeed, the strong greedy algorithm constructs better bases than the
@@ -489,17 +502,17 @@ condition numbers of the Gramians used to compute the projection
 onto {math}`V_N` explode:
 
 ```{code-cell}
-    G_trivial = trivial_basis.gramian(fom.h1_0_semi_product)
-    G_greedy = greedy_basis.gramian(fom.h1_0_semi_product)
-    trivial_conds, greedy_conds = [], []
-    for N in range(1, len(U)):
-        trivial_conds.append(np.linalg.cond(G_trivial[:N, :N]))
-        greedy_conds.append(np.linalg.cond(G_greedy[:N, :N]))
-    plt.figure()
-    plt.semilogy(range(1, len(U)), trivial_conds, label='trivial')
-    plt.semilogy(range(1, len(U)), greedy_conds, label='greedy')
-    plt.legend()
-    plt.show()
+G_trivial = trivial_basis.gramian(fom.h1_0_semi_product)
+G_greedy = greedy_basis.gramian(fom.h1_0_semi_product)
+trivial_conds, greedy_conds = [], []
+for N in range(1, len(U)):
+    trivial_conds.append(np.linalg.cond(G_trivial[:N, :N]))
+    greedy_conds.append(np.linalg.cond(G_greedy[:N, :N]))
+plt.figure()
+plt.semilogy(range(1, len(U)), trivial_conds, label='trivial')
+plt.semilogy(range(1, len(U)), greedy_conds, label='greedy')
+plt.legend()
+plt.show()
 ```
 
 This is quite obvious as the snapshot matrix `U` becomes more and
@@ -516,8 +529,8 @@ re-orthogonalization to improve numerical accuracy:
 ```{code-cell}
 :tags: [remove-output]
 
-    gram_schmidt(greedy_basis, product=fom.h1_0_semi_product, copy=False)
-    gram_schmidt(trivial_basis, product=fom.h1_0_semi_product, copy=False)
+gram_schmidt(greedy_basis, product=fom.h1_0_semi_product, copy=False)
+gram_schmidt(trivial_basis, product=fom.h1_0_semi_product, copy=False)
 ```
 
 The `copy=False` argument tells the algorithm to orthonormalize
@@ -529,11 +542,11 @@ their Gramians are identity matrices (up to numerics). Thus, their condition
 numbers should be near 1:
 
 ```{code-cell}
-    G_trivial = trivial_basis.gramian(fom.h1_0_semi_product)
-    G_greedy = greedy_basis.gramian(fom.h1_0_semi_product)
+G_trivial = trivial_basis.gramian(fom.h1_0_semi_product)
+G_greedy = greedy_basis.gramian(fom.h1_0_semi_product)
 
-    print(f'trivial: {np.linalg.cond(G_trivial)}, '
-          f'greedy: {np.linalg.cond(G_greedy)}')
+print(f'trivial: {np.linalg.cond(G_trivial)}, '
+      f'greedy: {np.linalg.cond(G_greedy)}')
 ```
 
 Orthonormalizing the bases does not change their linear span, so
@@ -541,23 +554,23 @@ best-approximation errors stay the same. Also, we can
 compute these errors now more easily by exploiting orthogonality:
 
 ```{code-cell}
-    def compute_proj_errors_orth_basis(basis, V, product):
-        errors = []
-        for N in range(len(basis) + 1):
-            v = V.inner(basis[:N], product=product)
-            V_proj = basis[:N].lincomb(v)
-            errors.append(np.max((V - V_proj).norm(product)))
-        return errors
+def compute_proj_errors_orth_basis(basis, V, product):
+    errors = []
+    for N in range(len(basis) + 1):
+        v = V.inner(basis[:N], product=product)
+        V_proj = basis[:N].lincomb(v)
+        errors.append(np.max((V - V_proj).norm(product)))
+    return errors
 
-    trivial_errors = compute_proj_errors_orth_basis(trivial_basis, V, fom.h1_0_semi_product)
-    greedy_errors  = compute_proj_errors_orth_basis(greedy_basis, V, fom.h1_0_semi_product)
+trivial_errors = compute_proj_errors_orth_basis(trivial_basis, V, fom.h1_0_semi_product)
+greedy_errors  = compute_proj_errors_orth_basis(greedy_basis, V, fom.h1_0_semi_product)
 
-    plt.figure()
-    plt.semilogy(trivial_errors, label='trivial')
-    plt.semilogy(greedy_errors, label='greedy')
-    plt.ylim(1e-1, 1e1)
-    plt.legend()
-    plt.show()
+plt.figure()
+plt.semilogy(trivial_errors, label='trivial')
+plt.semilogy(greedy_errors, label='greedy')
+plt.ylim(1e-1, 1e1)
+plt.legend()
+plt.show()
 ```
 
 Proper Orthogonal Decomposition
@@ -625,29 +638,29 @@ The POD in this more general form is implemented in pyMOR by the
 {meth}`~pymor.algorithms.pod.pod` method, which can be called as follows:
 
 ```{code-cell}
-    pod_basis, pod_singular_values = pod(U, product=fom.h1_0_semi_product, modes=25)
+pod_basis, pod_singular_values = pod(U, product=fom.h1_0_semi_product, modes=25)
 ```
 
 We said that the POD modes (left-singular vectors) are orthonormal with respect to the
 inner product on the target Hilbert-space. Let's check that:
 
 ```{code-cell}
-    np.linalg.cond(pod_basis.gramian(fom.h1_0_semi_product))
+np.linalg.cond(pod_basis.gramian(fom.h1_0_semi_product))
 ```
 
 Now, let us compare how the POD performs against the greedy algorithm in the worst-case
 best-approximation error:
 
 ```{code-cell}
-    pod_errors = compute_proj_errors_orth_basis(pod_basis, V, fom.h1_0_semi_product)
+pod_errors = compute_proj_errors_orth_basis(pod_basis, V, fom.h1_0_semi_product)
 
-    plt.figure()
-    plt.semilogy(trivial_errors, label='trivial')
-    plt.semilogy(greedy_errors, label='greedy')
-    plt.semilogy(pod_errors, label='POD')
-    plt.ylim(1e-1, 1e1)
-    plt.legend()
-    plt.show()
+plt.figure()
+plt.semilogy(trivial_errors, label='trivial')
+plt.semilogy(greedy_errors, label='greedy')
+plt.semilogy(pod_errors, label='POD')
+plt.ylim(1e-1, 1e1)
+plt.legend()
+plt.show()
 ```
 
 As it turns out, the POD spaces perform even slightly better than the greedy spaces.
@@ -669,7 +682,7 @@ differences between both spaces may be more significant.
 Finally, it is often insightful to look at the POD modes themselves:
 
 ```{code-cell}
-    fom.visualize(pod_basis)
+fom.visualize(pod_basis)
 ```
 
 As you can see, the first (more important) basis vectors account for the approximation of
@@ -677,7 +690,7 @@ the solutions in the bulk of the subdomains, whereas the higher modes are respon
 approximating the solutions at the subdomain interfaces.
 
 
-.. _weakgreedy:
+(weakgreedy)=
 
 Weak greedy algorithm
 ---------------------
@@ -698,7 +711,7 @@ we only compute a surrogate
 $$ \inf_{v \in V_N} \|u(\mu) - v\| \approx \mathcal{E}(\mu)$$
 
 for it. Replacing the best-approximation error by this surrogate in the
-[strong greedy](#strong-greedy-algorithm) algorithm, we arrive at the
+[strong greedy](#stronggreedy) algorithm, we arrive at the
 {meth}`weak greedy <pymor.algorithms.greedy.weak_greedy>`
 algorithm. If the surrogate {math}`\mathcal{E}(\mu)` is an upper and lower bound
 to the best-approximation error up to some fixed factor, it can still be shown that the
@@ -729,11 +742,11 @@ model with an appropriate error estimator. For the given (linear coercive) therm
 we can use {class}`~pymor.reductors.coercive.CoerciveRBReductor`:
 
 ```{code-cell}
-    reductor = CoerciveRBReductor(
-        fom,
-        product=fom.h1_0_semi_product,
-        coercivity_estimator=ExpressionParameterFunctional('min(diffusion)', fom.parameters)
-    )
+reductor = CoerciveRBReductor(
+    fom,
+    product=fom.h1_0_semi_product,
+    coercivity_estimator=ExpressionParameterFunctional('min(diffusion)', fom.parameters)
+)
 ```
 
 Here `product` specifies the inner product with respect to which we want to compute the
@@ -751,8 +764,8 @@ As the surrogate is cheap to evaluate, we choose here a training set of 1000 dif
 {{ parameter_values }}:
 
 ```{code-cell}
-    greedy_data = rb_greedy(fom, reductor, parameter_space.sample_randomly(1000),
-                            max_extensions=25)
+greedy_data = rb_greedy(fom, reductor, parameter_space.sample_randomly(1000),
+                        max_extensions=25)
 ```
 
 Take a look at the log output to see how the basis is built iteratively using
@@ -763,22 +776,22 @@ of the algorithm, including the final ROM. Here, however, we are interested in t
 generated reduced basis, which is managed by the `reductor`:
 
 ```{code-cell}
-    weak_greedy_basis = reductor.bases['RB']
+weak_greedy_basis = reductor.bases['RB']
 ```
 
 Let's see, how the weak-greedy basis performs:
 
 ```{code-cell}
-    weak_greedy_errors = compute_proj_errors_orth_basis(weak_greedy_basis, V, fom.h1_0_semi_product)
+weak_greedy_errors = compute_proj_errors_orth_basis(weak_greedy_basis, V, fom.h1_0_semi_product)
 
-    plt.figure()
-    plt.semilogy(trivial_errors, label='trivial')
-    plt.semilogy(greedy_errors, label='greedy')
-    plt.semilogy(pod_errors, label='POD')
-    plt.semilogy(weak_greedy_errors, label='weak greedy')
-    plt.ylim(1e-1, 1e1)
-    plt.legend()
-    plt.show()
+plt.figure()
+plt.semilogy(trivial_errors, label='trivial')
+plt.semilogy(greedy_errors, label='greedy')
+plt.semilogy(pod_errors, label='POD')
+plt.semilogy(weak_greedy_errors, label='weak greedy')
+plt.ylim(1e-1, 1e1)
+plt.legend()
+plt.show()
 ```
 
 We see that for smaller basis sizes the weak-greedy basis is slightly worse than the POD and
@@ -792,5 +805,5 @@ a certain degree, whereas the weak-greedy algorithm could select the snapshots f
 
 
 Download the code:
-:jupyter-download:script:`tutorial_basis_generation`
-:jupyter-download:notebook:`tutorial_basis_generation`
+{jupyter-download}:script:`tutorial_basis_generation`
+{jupyter-download}:notebook:`tutorial_basis_generation`
