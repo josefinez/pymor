@@ -48,7 +48,7 @@ install_suggests = {'ipython>=5.0': 'an enhanced interactive python shell',
                     'torch;python_version<"3.9"': 'PyTorch open source machine learning framework',
                     'jupyter_contrib_nbextensions': 'modular collection of jupyter extensions',
                     'pillow': 'image library used for bitmap data functions'}
-doc_requires = ['sphinx>=1.7', 'jupyter_sphinx', 'matplotlib', _PYSIDE, 'ipyparallel>=6.2.5', 'python-slugify',
+doc_requires = ['sphinx>=3.0', 'jupyter_sphinx', 'matplotlib', _PYSIDE, 'ipyparallel>=6.2.5', 'python-slugify',
                 'ipywidgets', 'sphinx-qt-documentation', 'bash_kernel', 'sphinx-material',
                 'sphinxcontrib-bibtex'] + install_requires
 ci_requires = [_PYTEST, 'pytest-cov', 'pytest-xdist', 'check-manifest', 'nbconvert', 'pytest-parallel',

@@ -41,7 +41,7 @@ setuptools>=40.8.0,<49.2.0
 slycot>=0.4.0
 sphinx-material
 sphinx-qt-documentation
-sphinx>=1.7
+sphinx>=3.0
 sphinxcontrib-bibtex
 sympy
 torch;python_version<"3.9"
