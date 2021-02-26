@@ -44,7 +44,8 @@ rules:
         PYPI_MIRROR_TAG: {{pypi_mirror_tag}}
         CI_IMAGE_TAG: {{ci_image_tag}}
         PYMOR_HYPOTHESIS_PROFILE: ci
-        BINDERIMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
+        DOCS_BINDER_IMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
+        LOCAL_BINDER_IMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
 
 .pytest:
     extends: .test_base
@@ -260,14 +261,23 @@ from source {{loop.index}}/{{loop.length}}:
     script: ./.ci/gitlab/install_checks/{{OS}}/check.bash
 {% endfor %}
 
-binder base image:
+docs binder image:
     extends: .binder
     stage: build
     script:
-        - docker build --build-arg CI_IMAGE_TAG=${CI_IMAGE_TAG} -t ${BINDERIMAGE} -f .ci/gitlab/Dockerfile.binder.base .
+        - docker build --build-arg CI_IMAGE_TAG=${CI_IMAGE_TAG} -t ${DOCS_BINDER_IMAGE} -f .ci/gitlab/Dockerfile.binder.base .
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-        - docker run ${BINDERIMAGE} ipython -c "from pymor.basic import *"
-        - docker push ${BINDERIMAGE}
+        - docker run ${DOCS_BINDER_IMAGE} ipython -c "from pymor.basic import *"
+        - docker push ${DOCS_BINDER_IMAGE}
+
+local binder image:
+    {# this image does not need to be pushed, we do not use it again #}
+    extends: .binder
+    stage: build
+    script:
+        - repo2docker --user-id 2000 --user-name ${USER} --no-run --debug --image-name ${LOCAL_BINDER_IMAGE} .
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        - docker run ${LOCAL_BINDER_IMAGE} ipython -c "from pymor.basic import *"
 
 local docker:
     extends: .binder
@@ -378,8 +388,8 @@ docs:
     image: {{registry}}/alpine:3.11
     stage: deploy
     resource_group: docs_deploy
-    needs: ["docs build 3 7", "binder base image"]
-    dependencies: ["docs build 3 7", "binder base image"]
+    needs: ["docs build 3 7", "docs binder image"]
+    dependencies: ["docs build 3 7", "docs binder image"]
     before_script:
         - apk --update add make python3 bash
         - pip3 install jinja2 pathlib jupyter-repo2docker

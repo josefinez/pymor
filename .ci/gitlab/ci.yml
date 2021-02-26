@@ -27,7 +27,8 @@ stages:
         PYPI_MIRROR_TAG: 49abe9da568babd4884f38fb83f82f1bfcf0aeaf
         CI_IMAGE_TAG: 49abe9da568babd4884f38fb83f82f1bfcf0aeaf
         PYMOR_HYPOTHESIS_PROFILE: ci
-        BINDERIMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
+        DOCS_BINDER_IMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
+        LOCAL_BINDER_IMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
 
 .pytest:
     extends: .test_base
@@ -813,14 +814,23 @@ from source 3/3:
     script: ./.ci/gitlab/install_checks/debian_bullseye/check.bash
 
 
-binder base image:
+docs binder image:
     extends: .binder
     stage: build
     script:
-        - docker build --build-arg CI_IMAGE_TAG=${CI_IMAGE_TAG} -t ${BINDERIMAGE} -f .ci/gitlab/Dockerfile.binder.base .
+        - docker build --build-arg CI_IMAGE_TAG=${CI_IMAGE_TAG} -t ${DOCS_BINDER_IMAGE} -f .ci/gitlab/Dockerfile.binder.base .
         - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-        - docker run ${BINDERIMAGE} ipython -c "from pymor.basic import *"
-        - docker push ${BINDERIMAGE}
+        - docker run ${DOCS_BINDER_IMAGE} ipython -c "from pymor.basic import *"
+        - docker push ${DOCS_BINDER_IMAGE}
+
+local binder image:
+    
+    extends: .binder
+    stage: build
+    script:
+        - repo2docker --user-id 2000 --user-name ${USER} --no-run --debug --image-name ${LOCAL_BINDER_IMAGE} .
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+        - docker run ${LOCAL_BINDER_IMAGE} ipython -c "from pymor.basic import *"
 
 local docker:
     extends: .binder
@@ -1130,8 +1140,8 @@ docs:
     image: zivgitlab.wwu.io/pymor/docker/alpine:3.11
     stage: deploy
     resource_group: docs_deploy
-    needs: ["docs build 3 7", "binder base image"]
-    dependencies: ["docs build 3 7", "binder base image"]
+    needs: ["docs build 3 7", "docs binder image"]
+    dependencies: ["docs build 3 7", "docs binder image"]
     before_script:
         - apk --update add make python3 bash
         - pip3 install jinja2 pathlib jupyter-repo2docker

@@ -1,4 +1,4 @@
-FROM BINDERIMAGE
+FROM DOCS_BINDER_IMAGE
 
 # binder wants to set the NB_ vars anyways, so we use it to service both setups
 ARG NB_USER

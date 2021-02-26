@@ -44,7 +44,7 @@ rm -rf ${REPO_DIR}/.binder
 mkdir ${REPO_DIR}/.binder
 
 # this needs to go into the repo root, not the subdir!
-sed -e "s;BINDERIMAGE;${BINDERIMAGE};g" -e "s;SLUG;${SLUG};g" \
+sed -e "s;DOCS_BINDER_IMAGE;${DOCS_BINDER_IMAGE};g" -e "s;SLUG;${SLUG};g" \
 	${PYMOR_ROOT}/.ci/gitlab/Dockerfile.binder.tocopy > ${REPO_DIR}/.binder/Dockerfile
 
 # for binder the notebooks need to exist alongside their .rst version
