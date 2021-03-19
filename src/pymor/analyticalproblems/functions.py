@@ -258,7 +258,7 @@ class ExpressionFunction(GenericFunction):
 
     def __reduce__(self):
         return (ExpressionFunction,
-                (self.expression, self.dim_domain, self.shape_range, self.parameters, self.values,
+                (self.expression, self.dim_domain, self.parameters, self.values,
                  getattr(self, '_name', None)))
 
 
