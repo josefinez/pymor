@@ -48,9 +48,10 @@ sed -e "s;BINDERIMAGE;${BINDERIMAGE};g" -e "s;SLUG;${SLUG};g" \
 	${PYMOR_ROOT}/.ci/gitlab/Dockerfile.binder.tocopy > ${REPO_DIR}/.binder/Dockerfile
 
 # for binder the notebooks need to exist alongside their .rst version
+# copy instead of symlink to allow repo usage with kaniko on WWU binderhub
 cd ${TARGET_DIR}
 for nb in $(find ./_downloads/ -name "*.ipynb") ; do
-  ln -s ${nb}
+  cp -a ${nb} .
 done
 
 git add ${TARGET_DIR}/*ipynb
