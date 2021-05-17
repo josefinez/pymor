@@ -24,8 +24,8 @@ stages:
           when: never
         - when: on_success
     variables:
-        PYPI_MIRROR_TAG: 685b387ea458371c662317cc4a03ca1cca279f5b
-        CI_IMAGE_TAG: 685b387ea458371c662317cc4a03ca1cca279f5b
+        PYPI_MIRROR_TAG: 43cac967c4383ac86bc223b3827394e3d7baea65
+        CI_IMAGE_TAG: 43cac967c4383ac86bc223b3827394e3d7baea65
         PYMOR_HYPOTHESIS_PROFILE: ci
         PYMOR_PYTEST_EXTRA: ""
         BINDERIMAGE: ${CI_REGISTRY_IMAGE}/binder:${CI_COMMIT_REF_SLUG}
@@ -59,7 +59,7 @@ stages:
 
 .submit:
     extends: .test_base
-    image: zivgitlab.wwu.io/pymor/docker/pymor/ci_sanity:685b387ea458371c662317cc4a03ca1cca279f5b
+    image: zivgitlab.wwu.io/pymor/docker/pymor/ci_sanity:43cac967c4383ac86bc223b3827394e3d7baea65
     variables:
         XDG_CACHE_DIR: /tmp
     retry:
@@ -152,7 +152,7 @@ stages:
 
 .sanity_checks:
     extends: .test_base
-    image: zivgitlab.wwu.io/pymor/docker/pymor/ci_sanity:685b387ea458371c662317cc4a03ca1cca279f5b
+    image: zivgitlab.wwu.io/pymor/docker/pymor/ci_sanity:43cac967c4383ac86bc223b3827394e3d7baea65
     stage: sanity
 #******** end definition of base jobs *********************************************************************************#
 
@@ -185,7 +185,7 @@ mpi 3 7:
     variables:
         COVERAGE_FILE: coverage_mpi__3.7
     services:
-    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.7:685b387ea458371c662317cc4a03ca1cca279f5b
+    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.7:43cac967c4383ac86bc223b3827394e3d7baea65
     script:
         - |
           if [[ "$CI_COMMIT_REF_NAME" == *"github/PR_"* ]]; then
@@ -205,7 +205,7 @@ mpi 3 8:
     variables:
         COVERAGE_FILE: coverage_mpi__3.8
     services:
-    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.8:685b387ea458371c662317cc4a03ca1cca279f5b
+    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.8:43cac967c4383ac86bc223b3827394e3d7baea65
     script:
         - |
           if [[ "$CI_COMMIT_REF_NAME" == *"github/PR_"* ]]; then
@@ -225,7 +225,7 @@ mpi 3 9:
     variables:
         COVERAGE_FILE: coverage_mpi__3.9
     services:
-    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.9:685b387ea458371c662317cc4a03ca1cca279f5b
+    image: zivgitlab.wwu.io/pymor/docker/pymor/testing_py3.9:43cac967c4383ac86bc223b3827394e3d7baea65
     script:
         - |
           if [[ "$CI_COMMIT_REF_NAME" == *"github/PR_"* ]]; then
