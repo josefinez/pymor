@@ -58,4 +58,6 @@ def _cleanup():
     global _pool
     if _pool and _pool[0] == 'ipython':
         _pool[2].__exit__(None, None, None)
+    if _pool and _pool[0] == 'mpi':
+        _pool[1]._remove_object(_pool[1]._payload)
     _pool = None
