@@ -5,7 +5,7 @@ source ${THIS_DIR}/common_test_setup.bash
 
 ompi_info
 
-export PYMOR_MPI_INIT_THREAD=$(python -c "from mpi4py import MPI;print(MPI.THREAD_SINGLE)")
+export PYMOR_MPI_INIT_THREAD=$(python -c "from mpi4py import MPI;print(MPI.THREAD_SERIALIZED)")
 # as a workaround intermittent MPI finalize errors which we
 # cannot seem to directly affect, we save the intermediate
 # pytest exit code in a file and check that afterwards
