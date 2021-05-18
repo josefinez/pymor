@@ -76,8 +76,6 @@ THERMALBLOCK_ADAPTIVE_ARGS = (
 )
 
 THERMALBLOCK_SIMPLE_ARGS = (
-    ('thermalblock_simple', ['pymor', 'naive', 2, 5, 5]),
-    ('thermalblock_simple', ['fenics', 'greedy', 2, 5, 5]),
     ('thermalblock_simple', ['ngsolve', 'pod', 2, 5, 5]),
 )
 # Font file loading currently does not work on windows
