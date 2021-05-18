@@ -3,11 +3,13 @@
 THIS_DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
 source ${THIS_DIR}/common_test_setup.bash
 
+ompi_info
+
 # as a workaround intermittent MPI finalize errors which we
 # cannot seem to directly affect, we save the intermediate
 # pytest exit code in a file and check that afterwards
 # while ignoring the mpirun result itself
-xvfb-run -a mpirun --mca btl self -n 2 coverage run --rcfile=setup.cfg \
+xvfb-run -a mpirun --mca btl vader -n 2 coverage run --rcfile=setup.cfg \
   --parallel-mode src/pymortests/mpi_run_demo_tests.py || true
 [[ "$(cat pytest.mpirun.success)" == "True" ]] || exit 127
 
