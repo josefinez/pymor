@@ -147,7 +147,7 @@ class ColoredFormatter(logging.Formatter):
             else:
                 levelname = '|' + levelname + '|'
 
-        return f'{timestamp} {indent}{levelname}{path}: {msg}'
+        return f'{indent}{levelname}{path}: {msg}'
 
     def format_html(self, record):
         try:
